@@ -1,6 +1,7 @@
 .vscode/
 __pycache__/
-venv/ 
+
+ireporter/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
