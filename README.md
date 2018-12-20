@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jennizalwango/UI_Reporter.svg?branch=master)](https://travis-ci.org/jennizalwango/UI_Reporter)
+
 # UI_Reporter
 A self journalism report system which lets a user to create red flags and interventions .Report on differnt cases that are affecting them and can call for hlp from government.
 
