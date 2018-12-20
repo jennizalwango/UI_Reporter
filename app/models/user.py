@@ -19,9 +19,3 @@ class User:
 
   def __to__str(self):
     return str(self.to_dict())
-
-    
-    # ​“othernames” ​:​ ​String​,  
-    # ​“email” ​:​ ​String​,    
-    # ​“registered” ​:​ ​Date​,  
-    # ​“isAdmin” ​:​ ​Boolean​,
