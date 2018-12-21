@@ -7,5 +7,5 @@ def create_app(environment):
 
   from app.views.routes import redflag
   
-  app.register_blueprint(redflag,url_prefix="/api/v1")
+  app.register_blueprint(redflag, url_prefix="/api/v1")
   return app
