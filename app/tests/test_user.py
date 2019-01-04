@@ -96,7 +96,5 @@ class APITestCase(BaseTestCase):
             response = self.client.post('/api/v1/incident', data=json.dumps(incident_data), content_type='application/json')
             data = json.loads(response.data.decode())
             self.assertEqual(400, response.status_code)
-
-
-            self.assertEqual("User assigned doesnot exist", data['message'])
+            self.assertEqual("User assigned doesnot exist", data["errors"])
             

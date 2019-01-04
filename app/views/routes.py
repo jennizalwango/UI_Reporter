@@ -133,7 +133,7 @@ def validate_incident(incident):
       })
 
     if not incident_type:
-      error.append({		
+      errors.append({		
         "incident_type": "Please specify the incident type"
       })
 
@@ -158,7 +158,7 @@ def fetch_all_incident():
         "data": [incident.to_dict() for incident in incident_list]
       })
   return jsonify({
-      "status":400,
+      "status":404,
       "message": "No incidents created"
       })
 
@@ -172,7 +172,7 @@ def get_specific(incident_id):
       })
 
   return jsonify({
-    "status": 400,
+    "status": 404,
     "error": "Incident not found" 
     })
 
@@ -191,7 +191,7 @@ def update_location(incident_id):
     if incident.id == incident_id:
       incident.location = location
       return jsonify({
-        "status": 202,
+        "status": 200,
         "message": "Updated incident record's location",
         "data": incident.to_dict()
       })
@@ -216,7 +216,7 @@ def updated_comment(incident_id):
     if incident.id == incident_id:
       incident.comment = comment
       return jsonify({
-        "status": 202,
+        "status": 200,
         "message": "Updated incident record's Comment",
         "data": incident.to_dict()
       })
@@ -232,7 +232,7 @@ def delete_a_specific_incident(incident_id):
     if incident.id == incident_id:
       incident_list.remove(incident)
       return jsonify({
-        "status": 202,
+        "status": 200,
         "message": "Incident record has been deleted"
       })
   return jsonify({
