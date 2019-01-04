@@ -17,6 +17,7 @@ def home():
 @redflag.route('/register', methods=['POST'])
 def register():
     data = request.get_json(force=True)
+    
     username = data.get('username', None)
     email = data.get('email', None)
     password = data.get('password', None)
@@ -93,7 +94,7 @@ def create_incident():
 
   response = {
     "status": 201,
-    "message": "Incident created successfully ",
+    "message": "Incident record created successfully ",
     "data": [incident.to_dict()]
   }
   
@@ -118,7 +119,7 @@ def validate_incident(incident):
 
     if not user_exists:
       errors.append({
-        "user": "User assigned doesnot exist"
+        "user_error": "User assigned doesnot exist"
       })
 
     if not location:
@@ -148,3 +149,93 @@ def validate_incident(incident):
     }
   else:
    return None
+
+@redflag.route('/incident', methods=['GET'])
+def fetch_all_incident():
+  if incident_list:
+    return jsonify({
+        "status": 200,
+        "data": [incident.to_dict() for incident in incident_list]
+      })
+  return jsonify({
+      "status":400,
+      "message": "No incidents created"
+      })
+
+@redflag.route('/incident/<incident_id>', methods=['GET'])
+def get_specific(incident_id):
+  for incident in incident_list:
+    if incident.id == incident_id:
+      return jsonify({
+        "status": 200,
+        "data": incident.to_dict()
+      })
+
+  return jsonify({
+    "status": 400,
+    "error": "Incident not found" 
+    })
+
+@redflag.route('/incident/<incident_id>/location', methods=['PATCH'])
+def update_location(incident_id):
+  data = request.get_json(force=True)
+  location = data.get('location', None)
+
+  if not location:
+    return jsonify({
+      "status": 400,
+      "message": "Please include Location of the record"
+    })
+
+  for incident in incident_list:
+    if incident.id == incident_id:
+      incident.location = location
+      return jsonify({
+        "status": 202,
+        "message": "Updated incident record's location",
+        "data": incident.to_dict()
+      })
+
+  return jsonify({
+    "status": 400,
+    "message": "Incident record not created"
+  })
+
+@redflag.route('/incident/<incident_id>/comment', methods=["PATCH"])
+def updated_comment(incident_id):
+  data = request.get_json(force=True)
+  comment = data.get('comment', None)
+
+  if not comment:
+    return jsonify({
+      "status": 400,
+      "message": "Please leave a comment"
+    })
+
+  for incident in incident_list:
+    if incident.id == incident_id:
+      incident.comment = comment
+      return jsonify({
+        "status": 202,
+        "message": "Updated incident record's Comment",
+        "data": incident.to_dict()
+      })
+
+  return jsonify({
+    "status": 400,
+    "message": "Incident record not created"
+  })
+
+@redflag.route('/incident/<incident_id>', methods=['DELETE'])
+def delete_a_specific_incident(incident_id):
+  for incident in incident_list:
+    if incident.id == incident_id:
+      incident_list.remove(incident)
+      return jsonify({
+        "status": 202,
+        "message": "Incident record has been deleted"
+      })
+  return jsonify({
+    "status": 400,
+    "message": "Incident record not created"
+    })
