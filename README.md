@@ -1,7 +1,8 @@
 [![Build Status](https://travis-ci.org/jennizalwango/UI_Reporter.svg?branch=master)](https://travis-ci.org/jennizalwango/UI_Reporter)
 
 # UI_Reporter
-SECTION A UI
+##SECTION A:
+## UI.
 A self journalism report system which lets a user to create red flags and interventions .Report on differnt cases that are affecting them and can call for hlp from government.
 
 This is the User Interface of the project, User creates account. The user can also just login if account is created already.
@@ -13,7 +14,8 @@ The admin is the one who  updates status of the user and delete what they think 
 The user is a to know the number of red flags and interventions resolved , rejected ,restricted and the ones under investigation.
 
 
-SECTION B API ENDPOINTS
+##SECTION B :
+##API ENDPOINTS.
 Thsi is an online application theat let users nagavigate through the application
 
 Create a ​red-flag​​ record, Get all ​red-flag​​ records, Get a specific ​red-flag​​ record Edit a specific ​red-flag​​ record and also Delete a ​red-flag​​ record
