@@ -12,3 +12,5 @@ app/tests/base.pyc
 app/views/__init__.pyc
 app/views/routes.pyc
 .cache/
+.coverage
+incident_views.pyc
