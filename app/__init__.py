@@ -5,7 +5,7 @@ def create_app(environment):
   app = Flask(__name__)
   app.config.from_object(configuration.get(environment))
 
-  from app.views.routes import redflag
+  from app.views.incident_views import redflag
   
   app.register_blueprint(redflag, url_prefix="/api/v1")
   return app
