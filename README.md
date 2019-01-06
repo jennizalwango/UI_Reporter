@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/jennizalwango/UI_Reporter.svg?branch=master)](https://travis-ci.org/jennizalwango/UI_Reporter)
+[![Build Status](https://travis-ci.org/jennizalwango/UI_Reporter.svg?branch=ft-api-endpoints)](https://travis-ci.org/jennizalwango/UI_Reporter)
 
 # UI_Reporter
 ## SECTION A:
