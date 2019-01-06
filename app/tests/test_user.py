@@ -124,8 +124,8 @@ class APITestCase(BaseTestCase):
                 "videos":"go.png",
                 "comment":"fair"
             }
-            response = self.client.post('/api/v1/incident', data=json.dumps(incident_data), content_type='application/json')
-            self.assertEqual(response.status_code, 201)
+            response = self.client.get('/api/v1/incident/<incident_id>', data=json.dumps(incident_data), content_type='application/json')
+            self.assertEqual(response.status_code, 200)
 
     def test_fetch_all_incident(self):
         with self.client:
@@ -139,7 +139,13 @@ class APITestCase(BaseTestCase):
                 "videos":"go.png",
                 "comment":"fair"
             }
-            response = self.client.post('/api/v1/incident', data=json.dumps(incident_data), content_type='application/json')
-            self.assertEqual(response.status_code, 201)
+            response = self.client.get('/api/v1/incident', data=json.dumps(incident_data), content_type='application/json')
+            self.assertEqual(response.status_code, 200)
 
-    
+    def test_update_location(self):
+        with self.client:
+            incident_data = {
+                "location": "bukoto"
+            }
+            response =self.client.patch('/api/v1/6519241b-c207-4787-8b6e-078d5d8d9d00/location',data=json.dumps(incident_data), content_type='application/json')
+            self.assertEqual(response.status_code, 404)

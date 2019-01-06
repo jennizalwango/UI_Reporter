@@ -74,7 +74,6 @@ def login():
 @redflag.route('/incident', methods=['POST'])
 def create_incident():
   data = request.get_json(force=True)
-
   created_by = data.get('created_by', None)
   incident_type = data.get('incident_type', None)
   location = data.get('location', None)
