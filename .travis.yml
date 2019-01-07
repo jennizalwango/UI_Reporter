@@ -1,12 +1,12 @@
 language: python
 python:
-  - "3.6.7"
+  - "3.6"
 # command to install dependencies
 install:
   - pip install -r requirements.txt
 # command to run tests
 script:
-  - pytest app/tests --cov=app/views
+  - pytest app/tests --cov=app
 after_success:
   - coveralls
 
