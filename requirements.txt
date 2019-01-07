@@ -17,3 +17,4 @@ Werkzeug==0.14.1
 wrapt==1.10.11
 pytest==3.3.2
 pytest-cov==2.6.1
+gunicorn-19.9.0
