@@ -1,0 +1,4 @@
+[app]
+[report]
+omit = ireporter/*
+
