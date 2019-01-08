@@ -32,14 +32,16 @@ You need to have [flask](http://flask.pocoo.org/docs/1.0/installation/) installe
 
 ## Installing 
 
-####You have to install a virutualenvirnoment, 
- `pip3 install virtualenv`
+##You have to install a virutualenvirnoment, 
+ `pip3 install virtualenv`.
 
-####Create the virtual envirnoment
- `virtualenv ireporter`
 
-####Activate your virtualenv to start working.
- `source ireporter/bin/activate`
+##Create the virtual envirnoment
+ `virtualenv ireporter`.
+
+
+##Activate your virtualenv to start working.
+ `source ireporter/bin/activate`.
 
 Install the app dependencies,these are found in the `requirements.txt`
 
