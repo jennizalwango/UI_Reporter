@@ -1,0 +1,17 @@
+.vscode/
+__pycache__/
+
+ireporter/
+app/__init__.pyc
+app/config.pyc
+app/models/__init__.pyc
+app/models/incident.pyc
+app/models/user.pyc
+app/tests/__init__.pyc
+app/tests/base.pyc
+app/views/__init__.pyc
+app/views/routes.pyc
+.cache/
+.coverage
+incident_views.pyc
+.coveralls.yml
