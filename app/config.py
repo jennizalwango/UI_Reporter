@@ -4,7 +4,6 @@ class Config:
   DEBUG = False
   TESTING = False
   SECRET_KEY = os.environ.get('SECRET_KEY', "1Nrd2JFQIWAh3aa0q9zrN15www7Czc6Q")
-  JSON_SORT_KEYS = False
 
 
 class ProductionConfig(Config):
