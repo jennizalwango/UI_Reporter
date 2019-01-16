@@ -37,7 +37,7 @@ The UI for the web application has been mainly built with Html and Css and some 
 
   There is also an images folder
 
-  This is the link to the gh-pages 
+  This is the link to the gh-pages https://github.com/jennizalwango/UI_Reporter/tree/gh-pages
 
 #  Section for the End Points:
 This is an online application that let users nagavigate through the application.
