@@ -35,7 +35,9 @@ The UI for the web application has been mainly built with Html and Css and some 
 
   For all the `css` that has been used in the making of the project it can be found in the `Css Folder`
 
-  There is also an images folder 
+  There is also an images folder
+
+  This is the link to the gh-pages 
 
 #  Section for the End Points:
 This is an online application that let users nagavigate through the application.
