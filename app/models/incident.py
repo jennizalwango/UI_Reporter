@@ -1,10 +1,9 @@
 
 from datetime import datetime
-import uuid
-
+incident_list = []
 class Incident:
   def __init__(self, created_by, incident_type, location, status, images, videos, comment):
-    self.id = str(uuid.uuid4())
+    self.id = len(incident_list)+1
     self.created_on = datetime.now()
     self.created_by = created_by
     self.incident_type = incident_type

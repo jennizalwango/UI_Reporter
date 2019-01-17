@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify
-from app.models.user import User
-from app.models.incident import Incident
+from app.models.user import User,user_list
+from app.models.incident import Incident,incident_list
 
 
 redflag = Blueprint('create', __name__)
-user_list = []
-incident_list = []
+
+
 required_status = ['resolved','rejected','draft','under investaging']
 
 @redflag.route('/', methods=['GET'])
@@ -29,9 +29,9 @@ def register():
 
     if not username or not password or not email:
         return jsonify({
-        "status": 400,
+        "status": 404,
         "error": "Please provide the required fields"
-    }), 400
+    }), 404
 
     for user in user_list:
       if username == user.username:
@@ -66,9 +66,9 @@ def login():
       }), 200
 
   return jsonify({
-    "status": 400,
+    "status": 404,
     "error": "Invaild username or password"
-  }), 400
+  }), 404
 
 
 @redflag.route('/incident', methods=['POST'])
@@ -159,7 +159,7 @@ def fetch_all_incident():
   return jsonify({
       "status":404,
       "message": "No incidents created"
-      })
+      }), 404
 
 @redflag.route('/incident/<incident_id>', methods=['GET'])
 def get_specific(incident_id):
@@ -182,7 +182,7 @@ def update_location(incident_id):
 
   if not location:
     return jsonify({
-      "status": 400,
+      "status": 404,
       "message": "Please include Location of the record"
     })
 
@@ -196,7 +196,7 @@ def update_location(incident_id):
       })
 
   return jsonify({
-    "status": 400,
+    "status": 404,
     "message": "Incident record not created"
   })
 
@@ -207,7 +207,7 @@ def updated_comment(incident_id):
 
   if not comment:
     return jsonify({
-      "status": 400,
+      "status": 404,
       "message": "Please leave a comment"
     })
 
@@ -221,7 +221,7 @@ def updated_comment(incident_id):
       })
 
   return jsonify({
-    "status": 400,
+    "status": 404,
     "message": "Incident record not created"
   })
 
@@ -235,6 +235,6 @@ def delete_a_specific_incident(incident_id):
         "message": "Incident record has been deleted"
       })
   return jsonify({
-    "status": 400,
+    "status": 404,
     "message": "Incident record not created"
     })
