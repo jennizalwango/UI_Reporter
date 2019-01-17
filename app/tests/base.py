@@ -1,5 +1,6 @@
 from unittest import TestCase
 from app import create_app
+from app.models.incident import incident_list
 
 
 class BaseTestCase(TestCase):
@@ -11,4 +12,5 @@ class BaseTestCase(TestCase):
 
   def tearDown(self):
     self.app = self.app_context.pop()
+    incident_list.clear()
     
