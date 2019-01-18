@@ -4,10 +4,15 @@ from app.tests.base import BaseTestCase
 
 class APITestCase(BaseTestCase):
 
+    def test_index(self):
+       with self.client:
+           response = self.client.get('/api/v1/', content_type='application/json')
+           self.assertEqual(response.status_code, 200)
+        
     def test_register_user(self):
        with self.client:
             user = {
-                    "username":"moses",
+                    "username":"jenny",
                     "password":"word",
                     "email":"jennyiceuy@gmail.com",
                     "first_name":"zawah",
@@ -26,6 +31,23 @@ class APITestCase(BaseTestCase):
             print(results)
             self.assertEqual("Please provide the required fields", results["error"])
             self.assertEqual(404, response.status_code)
+
+    def test_register_user_already_exists(self):
+       with self.client:
+            user = {
+                    "username":"jenny",
+                    "password":"word",
+                    "email":"jennyiceuy@gmail.com",
+                    "first_name":"zawah",
+                    "last_name":"boy",
+                    "other_names":"sweets",
+                    "phone_number":"0706237809",
+                    "is_admin": ""
+            }
+            response = self.client.post('/api/v1/register', data=json.dumps(user), content_type='application/json')
+            response = self.client.post('/api/v1/register', data=json.dumps(user), content_type='application/json')
+            self.assertEqual(response.status_code, 400)
+            self.assertIn('Account already exits', str(response.data))
 
     def test_login_user_sucessful(self):
         with self.client:
@@ -100,6 +122,91 @@ class APITestCase(BaseTestCase):
             }
             response = self.client.post('/api/v1/incident', data=json.dumps(incident_data), content_type='application/json')
             self.assertEqual(response.status_code, 201)
+
+    def test_get_all_incident(self):
+        with self.client:
+            create_user = {
+                "username" : "jenny",
+                "email": "jenny@gmail.com", 
+                "password": "password",
+                "first_name": "zawal",
+                "last_name": "jenni",
+                "other_names":"deal",
+                "phone_number": "0708494848", 
+                "is_admin": False
+            }
+            self.client.post('/api/v1/register', data=json.dumps(create_user),content_type='application/json')
+            incident_data = {
+                "created_by": "jenny", 
+                "incident_type": "redflag",
+                "location": "bukoto",
+                "phone_number": "0726725271",
+                "status": "draft",
+                "images":"come.jpg",  
+                "videos":"go.png",
+                "comment":"fair"
+            }
+            response = self.client.post('/api/v1/incident', data=json.dumps(incident_data), content_type='application/json')
+            response = self.client.get('/api/v1/incident')
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("jenny", str(response.data))
+
+    def test_get_one_incident(self):
+        with self.client:
+            create_user = {
+                "username" : "jenny",
+                "email": "jenny@gmail.com", 
+                "password": "password",
+                "first_name": "zawal",
+                "last_name": "jenni",
+                "other_names":"deal",
+                "phone_number": "0708494848", 
+                "is_admin": False
+            }
+            self.client.post('/api/v1/register', data=json.dumps(create_user),content_type='application/json')
+            incident_data = {
+                "created_by": "jenny", 
+                "incident_type": "redflag",
+                "location": "bukoto",
+                "phone_number": "0726725271",
+                "status": "draft",
+                "images":"come.jpg",  
+                "videos":"go.png",
+                "comment":"fair"
+            }
+            response = self.client.post('/api/v1/incident', data=json.dumps(incident_data), content_type='application/json')
+            response = self.client.get('/api/v1/incident/2')
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("jenny", str(response.data))
+
+
+    def test_update_incident_location(self):
+        with self.client:
+            create_user = {
+                "username" : "jenny",
+                "email": "jenny@gmail.com", 
+                "password": "password",
+                "first_name": "zawal",
+                "last_name": "jenni",
+                "other_names":"deal",
+                "phone_number": "0708494848", 
+                "is_admin": False
+            }
+            self.client.post('/api/v1/register', data=json.dumps(create_user),content_type='application/json')
+            incident_data = {
+                "created_by": "jenny", 
+                "incident_type": "redflag",
+                "location": "bukoto",
+                "phone_number": "0726725271",
+                "status": "draft",
+                "images":"come.jpg",  
+                "videos":"go.png",
+                "comment":"fair"
+            }
+            response = self.client.post('/api/v1/incident', data=json.dumps(incident_data), content_type='application/json')
+            response = self.client.patch('/api/v1/incident/2/location', data=json.dumps({'location':'Bombo'}), content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("Bombo", str(response.data))
 
     def test_user_not_exits(self):
         with self.client:
@@ -204,7 +311,7 @@ class APITestCase(BaseTestCase):
             }
             self.client.post('/api/v1/incident', data=json.dumps(incident_data))
             response = self.client.get('/api/v1/incident', content_type='application/json')
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, 404)
 
     def test_no_incident_exits(self):
         with self.client:
