@@ -1,7 +1,9 @@
 from flask import Blueprint, request, jsonify
-from app.models.user import User,user_list
-from app.models.incident import Incident,incident_list
+from app.models.user import *
+from app.models.incident import *
 
+userlist =user_list
+incidentlist = incident_list
 
 redflag = Blueprint('create', __name__)
 
@@ -33,7 +35,7 @@ def register():
         "error": "Please provide the required fields"
     }), 404
 
-    for user in user_list:
+    for user in userlist:
       if username == user.username:
         return jsonify({
           "status": 400,
@@ -41,7 +43,7 @@ def register():
         }), 400
 
     user = User(username, first_name, last_name, other_names, email, phone_number, password, is_admin)
-    user_list.append(user)
+    userlist.append(user)
 
     response = {
       "status": 201,
@@ -57,7 +59,7 @@ def login():
   username = data.get('username', None)
   password = data.get('password', None)
 
-  for user in user_list:
+  for user in userlist:
     if username == user.username and password == user.password:
       return jsonify({
         "status": 200,
@@ -89,7 +91,7 @@ def create_incident():
   if respo:
     return jsonify(respo), 400
 
-  incident_list.append(incident)
+  incidentlist.append(incident)
 
   response = {
     "status": 201,
@@ -111,7 +113,7 @@ def validate_incident(incident):
     images = incident.images
     videos = incident.videos
 
-    for user in user_list:
+    for user in userlist:
       if created_by == user.username:
         user_exists = True
       break
@@ -151,19 +153,19 @@ def validate_incident(incident):
 
 @redflag.route('/incident', methods=['GET'])
 def fetch_all_incident():
-  if incident_list:
+  if incidentlist:
     return jsonify({
         "status": 200,
-        "data": [incident.to_dict() for incident in incident_list]
+        "data": [incident.to_dict() for incident in incidentlist]
       })
   return jsonify({
       "status":404,
       "message": "No incidents created"
       }), 404
 
-@redflag.route('/incident/<incident_id>', methods=['GET'])
+@redflag.route('/incident/<int:incident_id>', methods=['GET'])
 def get_specific(incident_id):
-  for incident in incident_list:
+  for incident in incidentlist:
     if incident.id == incident_id:
       return jsonify({
         "status": 200,
@@ -175,7 +177,7 @@ def get_specific(incident_id):
     "error": "Incident not found" 
     })
 
-@redflag.route('/incident/<incident_id>/location', methods=['PATCH'])
+@redflag.route('/incident/<int:incident_id>/location', methods=['PATCH'])
 def update_location(incident_id):
   data = request.get_json(force=True)
   location = data.get('location', None)
@@ -186,7 +188,7 @@ def update_location(incident_id):
       "message": "Please include Location of the record"
     })
 
-  for incident in incident_list:
+  for incident in incidentlist:
     if incident.id == incident_id:
       incident.location = location
       return jsonify({
@@ -200,7 +202,7 @@ def update_location(incident_id):
     "message": "Incident record not created"
   })
 
-@redflag.route('/incident/<incident_id>/comment', methods=["PATCH"])
+@redflag.route('/incident/<int:incident_id>/comment', methods=["PATCH"])
 def updated_comment(incident_id):
   data = request.get_json(force=True)
   comment = data.get('comment', None)
@@ -211,7 +213,7 @@ def updated_comment(incident_id):
       "message": "Please leave a comment"
     })
 
-  for incident in incident_list:
+  for incident in incidentlist:
     if incident.id == incident_id:
       incident.comment = comment
       return jsonify({
@@ -225,11 +227,11 @@ def updated_comment(incident_id):
     "message": "Incident record not created"
   })
 
-@redflag.route('/incident/<incident_id>', methods=['DELETE'])
+@redflag.route('/incident/<int:incident_id>', methods=['DELETE'])
 def delete_a_specific_incident(incident_id):
-  for incident in incident_list:
+  for incident in incidentlist:
     if incident.id == incident_id:
-      incident_list.remove(incident)
+      incidentlist.remove(incident)
       return jsonify({
         "status": 200,
         "message": "Incident record has been deleted"
