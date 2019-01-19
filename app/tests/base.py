@@ -20,6 +20,21 @@ class BaseTestCase(TestCase):
                 "is_admin": False
             } 
 
+    self.create_incident = {
+        "created_by":"jenny",
+        "incident_type": "redflag",
+        "location":"jinja",
+        "phone_number": "070367235",
+        "status":"draft",
+        "images":"come.jpg",
+        "videos":"go.mp4",
+        "comment":"nice"
+    }
+    
+    self.required_feilds = {
+
+    }
+
   def tearDown(self):
     self.app = self.app_context.pop()
     incident_views.userlist = []
