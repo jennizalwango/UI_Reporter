@@ -31,15 +31,22 @@ def register():
 
     if not username or not password or not email:
         return jsonify({
-        "status": 404,
+        "status": 400,
         "error": "Please provide the required fields"
-    }), 404
+    }), 400
+
 
     for user in userlist:
       if username == user.username:
         return jsonify({
           "status": 400,
           "error": "Account already exits"
+        }), 400
+    for user in userlist:
+      if email == user.email:
+        return jsonify({
+            "status": 400,
+            "message":"Email already exists"
         }), 400
 
     user = User(username, first_name, last_name, other_names, email, phone_number, password, is_admin)
@@ -51,7 +58,6 @@ def register():
       "data": [user.to_dict()]
     }
     return jsonify(response), 201
-
 
 @redflag.route('/login', methods=['POST'])
 def login():
@@ -68,9 +74,9 @@ def login():
       }), 200
 
   return jsonify({
-    "status": 404,
+    "status": 400,
     "error": "Invaild username or password"
-  }), 404
+  }), 400
 
 
 @redflag.route('/incident', methods=['POST'])
@@ -159,9 +165,9 @@ def fetch_all_incident():
         "data": [incident.to_dict() for incident in incidentlist]
       })
   return jsonify({
-      "status":404,
+      "status":400,
       "message": "No incidents created"
-      }), 404
+      }), 400
 
 @redflag.route('/incident/<int:incident_id>', methods=['GET'])
 def get_specific(incident_id):
@@ -173,7 +179,7 @@ def get_specific(incident_id):
       })
 
   return jsonify({
-    "status": 404,
+    "status": 400,
     "error": "Incident not found" 
     })
 
@@ -184,9 +190,9 @@ def update_location(incident_id):
 
   if not location:
     return jsonify({
-      "status": 404,
+      "status": 400,
       "message": "Please include Location of the record"
-    })
+    }), 400
 
   for incident in incidentlist:
     if incident.id == incident_id:
@@ -195,12 +201,12 @@ def update_location(incident_id):
         "status": 200,
         "message": "Updated incident record's location",
         "data": incident.to_dict()
-      })
+      }), 200
 
   return jsonify({
-    "status": 404,
+    "status": 400,
     "message": "Incident record not created"
-  })
+  }), 400
 
 @redflag.route('/incident/<int:incident_id>/comment', methods=["PATCH"])
 def updated_comment(incident_id):
@@ -209,9 +215,9 @@ def updated_comment(incident_id):
 
   if not comment:
     return jsonify({
-      "status": 404,
+      "status": 400,
       "message": "Please leave a comment"
-    })
+    }), 400
 
   for incident in incidentlist:
     if incident.id == incident_id:
@@ -220,12 +226,12 @@ def updated_comment(incident_id):
         "status": 200,
         "message": "Updated incident record's Comment",
         "data": incident.to_dict()
-      })
+      }), 200
 
   return jsonify({
-    "status": 404,
+    "status": 400,
     "message": "Incident record not created"
-  })
+  }), 400
 
 @redflag.route('/incident/<int:incident_id>', methods=['DELETE'])
 def delete_a_specific_incident(incident_id):
@@ -235,8 +241,9 @@ def delete_a_specific_incident(incident_id):
       return jsonify({
         "status": 200,
         "message": "Incident record has been deleted"
-      })
+      }), 200
+
   return jsonify({
-    "status": 404,
+    "status": 400,
     "message": "Incident record not created"
-    })
+    }), 400
