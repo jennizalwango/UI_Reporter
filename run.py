@@ -1,8 +1,10 @@
-import os 
-from app import create_app
+import os
+from app import app
+from app.models.database import DatabaseConnenction
 
-environment = os.environ.get('IREPORTER_ENV', 'development')
-app = create_app(environment)
+db = DatabaseConnenction()
+
 
 if __name__ == '__main__':
+  db.create_tables()
   app.run()
