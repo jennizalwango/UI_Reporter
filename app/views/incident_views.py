@@ -1,10 +1,10 @@
-from flask import Blueprint, request, jsonify
-import datetime
-from app.models.database import *
 import os
-from flask_jwt_extended import (JWTManager, jwt_required, create_access_token, get_jwt_identity)
+import datetime
+from flask import Blueprint, request, jsonify
+from app.models.database import *
+from app.controllers.auth_users import  encode_auth_token, token_required
 from app.controllers.validations import Validators
-from app.controllers.user_controllers import get_user
+
 
 redflag = Blueprint('redflag', __name__)
 
@@ -39,41 +39,6 @@ def register():
         "status": 400,
         "message":"Email already taken" 
       })
-    invalid_email = validate_input.validatate_user_email(email)
-    if invalid_email:
-      return jsonify({
-        "status": 400,
-        "error": invalid_email
-      }), 400
-
-    invalid_username = validate_input.validatate_user_username(username)
-    if invalid_username:
-      return jsonify({
-        "status": 400,
-        "error": invalid_username
-      }), 400
-
-    invalid_first_name = validate_input.validate_user_first_name(first_name)
-    if invalid_first_name:
-      return jsonify({
-        "status": 400,
-        "error": invalid_first_name
-      }), 400
-
-    invalid_last_name = validate_input.validate_user_last_name(last_name)
-    if invalid_last_name:
-      return jsonify({
-        "status": 400,
-        "error": invalid_last_name
-      }), 400
-
-    invalid_other_name = validate_input.validate_user_other_name(other_name)
-    if invalid_other_name:
-      return jsonify({
-        "status": 400,
-        "error": invalid_other_name
-      }), 400
-
 
     user = db.create_user(username, first_name, last_name, other_name, email, password)
     return jsonify({
@@ -88,16 +53,6 @@ def login():
   username = data.get('username', None)
   password = data.get('password', None)
 
-  db_user = db.get_user(username, password)
-  if not db_user:
-    return jsonify({
-      "status": 400,
-      "message":"User doesnot exit"
-      }), 400
-  return jsonify({
-    "status":200,
-    "message":"Login Successful"
-  })
   if  not type ("username") == str:
     return jsonify({
       "status": 400,
@@ -110,9 +65,23 @@ def login():
       "message":"Please make password a string"
       }), 400
 
+
+  db_user = db.get_user(username, password)
+  if not db_user:
+    return jsonify({
+      "status": 400,
+      "message":"User doesnot exit"
+      }), 400
+  token = encode_auth_token(password).decode()
+  return jsonify({
+    "status":200,
+    "token": token,
+    "message":"Login Successful"
+    })
+  
 @redflag.route('/incident', methods=['POST'])
-# @jwt_required
-def create_incident_redflag():
+@token_required
+def create_incident_redflag(current_user):
   data = request.get_json(force=True)
 
   created_by = data.get('created_by', None)
@@ -131,14 +100,6 @@ def create_incident_redflag():
     "message": "Incident created successfully",
     "data":db_Incident
   })
-
-  # current_user = get_jwt_identity()
-  # if current_user['admin'] != False:
-  #   return jsonify({
-  #     "status":400,
-  #     "message":"You donot have access to this function",
-  #     "data":db_Incident
-  #     }), 400
 
   if "created_by" not in db_Incident:
     return jsonify({
@@ -224,92 +185,49 @@ def create_incident_redflag():
       "status": 400,
       "message": "Comment must be put in a string"
       }), 400
-
-  # db.incident(current_user['id'], created_by, incident_type, location, phone_number,status, images, videos, comment)
   
 @redflag.route('/incident', methods=['GET'])
-# @jwt_required
-def fetch_all_incident():
+@token_required
+def fetch_all_incident(current_user):
   db_fetch = db.fetch_all_incident()
   return jsonify({
     "status":200,
     "data": db_fetch
     }), 200
-
-    # """acessed if admin"""
-
-  # current_user = get_jwt_identity()
-
-  # if current_user['admin'] == True:
-  #     incidents = db.fetch_all_incident()
-  # else:
-  #     """ by user """
-  #     incidents = db.fetch_all_incident(current_user['id'])
-
   
-@redflag.route('/incident/<int:incident_id>', methods=['GET'])
-@jwt_required
-def get_specific(incident_id):
-  current_user = get.get_jwt_identity
-
-  incident = db.get_a_specific('incident_id', id)
-  if not indicent:
-    return jsonify({
-      "status":400,
-      "message" : "Incident  not found"
-      }), 400
-
-  if current_user['admin'] == True or current_user['id'] == incident[2]:
-    return jsonify({
-      "status":200,
-      "message": incidents_in
-      }), 200
-
+@redflag.route('/incident/<int:incid_id>', methods=['GET'])
+@token_required
+def get_specific(incid_id):
+  db_speci = db.get_a_specific_incident(incid_id)
   return jsonify({
-    "status":400,
-    "message" : "You have not created incidents"
-    }), 400
+    "status":200,
+    "data":db_speci
+  }), 200
 
 @redflag.route('/incident/<int:incident_id>/location', methods=['PATCH'])
-# @jwt_required
-def update_location(incident_id):
+@token_required
+def update_location(current_user):
   data = request.get_json(force=True)
   location = data.get('location', None)
-  
-  update_loc = db.update_location(incident_id, location)
-  return jsonify({
-    "status": 200,
-    "message": "Updated incident record location: {}".format(location),
-    "data": update_loc
-    }), 200
 
+  if current_user['admin'] is True:
+    update_loc = db.update_location(incident_id, location)
+    return jsonify({
+      "status": 200,
+      "message": "Updated incident record location: {}".format(location),
+      "data": update_loc
+      }), 200
 
-  # if location not in list(data.keys()):
-  #   return jsonify({
-  #     "status": 400,
-  #     "message": "Please include Location of the record"
-  #   }), 400
+  else:
+    return jsonify({
+      "status":400,
+      "message":"You donot have access to the endpoint"
+    })
 
-  # if not type(location) == str:
-  #   return jsonify({
-  #     "status": 400,
-  #     "message":"Location record should be a string"
-  #     }), 400
-  # if not location.strip():
-  #   return jsonify({
-  #     "status":400,
-  #     "message":"Please include Location of the record"
-  #     }), 400
-  
-  # current_user = get_jwt_identity()
-  # if current_user['id'] != db.get_user_id(id):
-  #   return jsonify({
-  #     "ststus":400,
-  #     "message":"Sorry you cannot access this endpoint"
-  #   })
     
 @redflag.route('/incident/<int:incident_id>/comment', methods=["PATCH"])
-def updated_comment(incident_id):
+@token_required
+def updated_comment(current_user):
   data = request.get_json(force=True)
   comment = data.get('comment', None)
 
@@ -330,35 +248,17 @@ def updated_comment(incident_id):
     "message": "Incident record not created"
   }), 400
 
-
-
-@redflag.route('/incident/<int:incident_id>/comment', methods=["PATCH"])
-def updated_comment(incident_id):
-  data = request.get_json(force=True)
-  comment = data.get('comment', None)
-
-  update_com = db.update_comment(incident_id, comment)
-  if not comment:
+@redflag.route('/incident/<int:incident_id>', methods=['DELETE'])
+@token_required
+def delete_a_specific_incident(current_user):
+  current_user['admin'] is True
+  if current_user is True:
+    incidenti = db.delete_incident(incident_id)
+    return jsonify({
+      "status": 200,
+      "message": "Incident record has been deleted"
+      }),200
     return jsonify({
       "status": 400,
-      "message": "Please leave a comment"
-    }), 400
-  return jsonify({
-        "status": 200,
-        "message": "Updated incident record's Comment",
-        "data": update_com
-      }), 200
-@redflag.route('/incident/<int:incident_id>', methods=['DELETE'])
-def delete_a_specific_incident(incident_id):
-
-  # current_user = jwt_get_identity()
-  # current_user['admin'] == True
-  incidenti = db.drop_tables()
-  return jsonify({
-    "status": 200,
-    "message": "Incident record has been deleted"
-    }),200
-  return jsonify({
-    "status": 400,
-    "message": "Incident record not created"
-    }), 400
+      "message": "You donot have access for the request"
+      }), 400

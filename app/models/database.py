@@ -22,8 +22,8 @@ class DatabaseConnenction:
     self.cursor.execute(create_user_table)
     
     create_incident_table = "CREATE TABLE IF NOT EXISTS incident\
-    ( incident_id SERIAL PRIMARY KEY, created_by VARCHAR(50), incident_type VARCHAR(50), \
-    location VARCHAR(50), phone_number VARCHAR(50),status VARCHAR(50), images VARCHAR(50), videos VARCHAR(50), comment VARCHAR(50), created_on VARCHAR(50), user_id INTEGER REFERENCES users(user_id));"
+    ( incident_id SERIAL PRIMARY KEY, created_by SERIAL REFERENCES users(user_id), incident_type VARCHAR(50), \
+    location VARCHAR(50), phone_number VARCHAR(50),status VARCHAR(50), images VARCHAR(50), videos VARCHAR(50), comment VARCHAR(50), created_on VARCHAR(50));"
     self.cursor.execute(create_incident_table)
 
   def create_user(self, username, first_name, last_name, other_name, email, password):
@@ -34,10 +34,26 @@ class DatabaseConnenction:
     return self.cursor.fetchall()
 
   def get_user(self,username, password):
-    query = "SELECT username, password FROM users WHERE  username = '{}'AND password = '{}';".format(username, password)
+    query = "SELECT username, password, user_id FROM users WHERE  username = '{}'AND password = '{}';".format(username, password)
     self.cursor.execute(query)
     user_in = self.cursor.fetchone()
     return user_in
+
+  def get_user_by_password(self, password):
+    query = "SELECT password FROM users WHERE  password = '{}';".format(password)
+    self.cursor.execute(query)
+    userz = self.cursor.fetchone()
+    return userz
+
+  # def login_user(self, username, password):
+  #   query = "INSERT INTO user(username, password VALUES('{}','{}'));RETURNING  user_id;"" .format(username, password)
+  #   self.cursor.execute(query)
+    
+  def get_user_id(self, id):
+    query = "SELECT user_id FROM incident WHERE incident_id = '{}';".format(id)
+    self.cursor.execute(query)
+    user_id = self.cursor.fetchone()[0]
+    return user_id
 
   def check_email(self, email):
     query = "SELECT * FROM users WHERE email = '{}';".format(email)
@@ -57,8 +73,8 @@ class DatabaseConnenction:
     incidents_in = self.cursor.fetchall()
     return incidents_in
 
-  def get_a_specific_incident(self, id):
-    query = "SELECT * FROM incident WHERE user_id = {};".format(id)
+  def get_a_specific_incident(self, incid_id):
+    query = "SELECT * FROM incident WHERE incident_id ={};".format(incid_id)
     self.cursor.execute(query)
     incidents_in = self.cursor.fetchall()
     return incidents_in
@@ -68,6 +84,10 @@ class DatabaseConnenction:
     self.cursor.execute(query)
     return self.cursor.fetchall()
 
+  def update_user(self, user_id, value):
+    query = "UPDATE users SET admin = '{}' WHERE user_id = '{}'RETURNING * ;".format(value, user_id)
+    self.cursor.execute(query)
+  
     
   def update_status(self, incident_id, status):
     query = "UPDATE incident SET status = '{}' WHERE incident_id = '{}';".format(status, incident_id)
@@ -77,12 +97,13 @@ class DatabaseConnenction:
     query = "UPDATE incident SET comment = '{}' WHERE incident_id = '{}' RETURNING *;\
     ".format(comment, incident_id)
     self.cursor.execute(query)
-    return self.cursor.fetchall()
+    return self.cursor.fetchone()
 
-  def drop_tables(self):
-    query = "DROP TABLE users ;DROP TABLE incident; "
+  def delete_incident(self, incident_id):
+    query = "DELETE FROM incident WHERE incident_id = '{}' RETURNING incident_id" .format(incident_id)
     self.cursor.execute(query)
-    return "Dropped"
+    return self.cursor.fetchone()
+
 
 
 
