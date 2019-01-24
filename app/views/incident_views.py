@@ -31,21 +31,16 @@ def register():
     email = data.get('email', None)
     password = data.get('password', None)
 
-    
-    db.create_tables()
-    check_email = db.check_email(email)
-    if check_email:
-      return jsonify({
-        "status": 400,
-        "message":"Email already taken" 
-      })
-
     user = db.create_user(username, first_name, last_name, other_name, email, password)
     return jsonify({
       "status": 201,
       "message":"User created successfully",
       "data":user
     }), 201
+    return jsonify({
+      "status":400,
+      "message":"Please provide valid information "
+    })
 
 @redflag.route('/auth/login', methods=['POST'])
 def login():
@@ -53,31 +48,44 @@ def login():
   username = data.get('username', None)
   password = data.get('password', None)
 
-  if  not type ("username") == str:
+  if  not type("username") == str:
     return jsonify({
       "status": 400,
       "message":"Please make username a string"
       }), 400
 
-  if  not type ("password") == str:
+  if  not type("password") == str:
     return jsonify({
       "status": 400,
       "message":"Please make password a string"
       }), 400
 
-
-  db_user = db.get_user(username, password)
-  if not db_user:
+  if len(username) < 3:
     return jsonify({
-      "status": 400,
-      "message":"User doesnot exit"
+      "status":400,
+      "message":"Username too short, should have atleast 3 character"
       }), 400
-  token = encode_auth_token(password).decode()
-  return jsonify({
-    "status":200,
-    "token": token,
-    "message":"Login Successful"
+
+  if len(password) < 5:
+      return jsonify({
+        "status":400,
+        "message":"Password too short, should have atleast 5 character"
+        }), 400
+        
+  db_user = db.get_user(username, password)
+  if  db_user:
+    token = encode_auth_token(username).decode()
+    return jsonify({
+      "status":200,
+      "token": token,
+      "message":"Login Successful"
     })
+  return jsonify({
+        "status": 400,
+        "message":"User doesnot exit"
+        }), 400
+    
+  
   
 @redflag.route('/incident', methods=['POST'])
 @token_required
@@ -100,6 +108,8 @@ def create_incident_redflag(current_user):
     "message": "Incident created successfully",
     "data":db_Incident
   })
+
+  #  """validatate for the input data"""
 
   if "created_by" not in db_Incident:
     return jsonify({
@@ -149,8 +159,6 @@ def create_incident_redflag(current_user):
       "message":"Please leave a comment"
       }), 400
 
-#  """validations for the input data"""
-
   if not type(created_by) == str:
     return jsonify({
       "status":400,
@@ -190,15 +198,16 @@ def create_incident_redflag(current_user):
 @token_required
 def fetch_all_incident(current_user):
   db_fetch = db.fetch_all_incident()
+  print(db_fetch)
   return jsonify({
     "status":200,
     "data": db_fetch
     }), 200
   
-@redflag.route('/incident/<int:incid_id>', methods=['GET'])
+@redflag.route('/incident/<int:incident_id>', methods=['GET'])
 @token_required
-def get_specific(incid_id):
-  db_speci = db.get_a_specific_incident(incid_id)
+def get_specific(current_user, incident_id):
+  db_speci = db.get_a_specific_incident(incident_id)
   return jsonify({
     "status":200,
     "data":db_speci
@@ -206,59 +215,80 @@ def get_specific(incid_id):
 
 @redflag.route('/incident/<int:incident_id>/location', methods=['PATCH'])
 @token_required
-def update_location(current_user):
+def update_location(current_user, incident_id):
   data = request.get_json(force=True)
   location = data.get('location', None)
+  # if current_user['admin']:
+  if not isinstance(location, str):
+    return({
+      "status": 400,
+      "message": "Location should be a string"
+    })
 
-  if current_user['admin'] is True:
+  if len(location) == 0:
+    return jsonify({
+      "status":400,
+      "message": "Location should not be empty"
+    })
+
+  try:
     update_loc = db.update_location(incident_id, location)
     return jsonify({
       "status": 200,
       "message": "Updated incident record location: {}".format(location),
       "data": update_loc
       }), 200
-
-  else:
+  except:
     return jsonify({
       "status":400,
-      "message":"You donot have access to the endpoint"
-    })
-
+      "message":"Location is not provided"
+      })
+   
     
 @redflag.route('/incident/<int:incident_id>/comment', methods=["PATCH"])
 @token_required
-def updated_comment(current_user):
+def updated_comment(current_user, incident_id):
   data = request.get_json(force=True)
   comment = data.get('comment', None)
 
-  update_com = db.update_comment(incident_id, comment)
-  if not comment:
+  if not isinstance(comment, str):
     return jsonify({
       "status": 400,
-      "message": "Please leave a comment"
+      "message": "Please comment must be a string"
     }), 400
-  return jsonify({
-        "status": 200,
-        "message": "Updated incident record's Comment",
-        "data": update_com
-      }), 200
 
-  return jsonify({
-    "status": 400,
-    "message": "Incident record not created"
+  if len(comment) == 0:
+    return jsonify({
+      "status": 400,
+      "message": "Comment must not be empty "
+    })
+  
+  # if current_user['admin'] is True:
+  try:
+    update_com = db.update_comment(incident_id, comment)
+    return jsonify({
+      "status": 200,
+      "message": "Updated incident record's Comment",
+      "data": update_com
+      }), 200
+  except:
+    return jsonify({
+      "status": 400,
+      "message": "Comment is not provided"
   }), 400
+  
 
 @redflag.route('/incident/<int:incident_id>', methods=['DELETE'])
 @token_required
-def delete_a_specific_incident(current_user):
-  current_user['admin'] is True
+def delete_a_specific_incident(current_user, incident_id):
+  current_user['admin'] 
   if current_user is True:
     incidenti = db.delete_incident(incident_id)
     return jsonify({
       "status": 200,
       "message": "Incident record has been deleted"
       }),200
-    return jsonify({
-      "status": 400,
-      "message": "You donot have access for the request"
-      }), 400
+  return jsonify({
+    "status": 400,
+    "message": "You donot have access for the request"
+    }), 400

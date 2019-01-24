@@ -1,9 +1,17 @@
+import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
  
 
 class DatabaseConnenction:
   def __init__(self):
+    if os.getenv('DB_NAME') == 'testing_db':
+      self.db_name = 'testing_db'
+    else:
+      self.db_name = "jenny"
+
+      print(self.db_name)
+
     connection_details = """ dbname='jenny' user='postgres' password='postgres'  port='5432' host='localhost'   
     """
     try:
@@ -11,7 +19,6 @@ class DatabaseConnenction:
         self.connection.autocommit = True
         self.cursor = self.connection.cursor(cursor_factory=RealDictCursor)
         print('Connected to database')
-        # self.create_tables()
 
     except:
       print('Failed to connect to database')
@@ -33,21 +40,17 @@ class DatabaseConnenction:
     self.cursor.execute(query)
     return self.cursor.fetchall()
 
-  def get_user(self,username, password):
+  def get_user(self, username, password):
     query = "SELECT username, password, user_id FROM users WHERE  username = '{}'AND password = '{}';".format(username, password)
     self.cursor.execute(query)
     user_in = self.cursor.fetchone()
     return user_in
 
-  def get_user_by_password(self, password):
-    query = "SELECT password FROM users WHERE  password = '{}';".format(password)
+  def get_user_by_user_id(self, username):
+    query = "SELECT * FROM users WHERE username = '{}';".format(username)
     self.cursor.execute(query)
     userz = self.cursor.fetchone()
     return userz
-
-  # def login_user(self, username, password):
-  #   query = "INSERT INTO user(username, password VALUES('{}','{}'));RETURNING  user_id;"" .format(username, password)
-  #   self.cursor.execute(query)
     
   def get_user_id(self, id):
     query = "SELECT user_id FROM incident WHERE incident_id = '{}';".format(id)
@@ -55,11 +58,24 @@ class DatabaseConnenction:
     user_id = self.cursor.fetchone()[0]
     return user_id
 
+  def login_user(self, username ,password):
+    query = "SELECT username, password, user_id FROM users WHERE  username = '{}'AND password = '{}';".format(username, password)
+    self.cursor.execute(query)
+    user_in = self.cursor.fetchone()
+    return user_in
+
+
   def check_email(self, email):
     query = "SELECT * FROM users WHERE email = '{}';".format(email)
     self.cursor.execute(query)
     emaile = self.cursor.fetchone()
     return emaile
+    
+  def check_username(self, username):
+    query = "SELECT * FROM users WHERE username = '{}';".format(username)
+    self.cursor.execute(query)
+    usernamee = self.cursor.fetchone()
+    return usernamee
 
   def create_incident(self, created_by, incident_type, location, phone_number, status, images, videos, comment,created_on):
     query = "INSERT INTO incident(created_by, incident_type, location, phone_number, status, images, videos,comment, created_on)\
@@ -80,8 +96,9 @@ class DatabaseConnenction:
     return incidents_in
 
   def update_location(self, incident_id, location):
-    query = "UPDATE incident SET location = '{}' WHERE incident_id = '{}'RETURNING * ;".format(location, incident_id)
-    self.cursor.execute(query)
+    print(location, incident_id)
+    query = "UPDATE incident SET location = '{}' WHERE incident_id = {} RETURNING * ;".format(location, incident_id) 
+    self.cursor.execute(query) 
     return self.cursor.fetchall()
 
   def update_user(self, user_id, value):
@@ -94,16 +111,20 @@ class DatabaseConnenction:
     self.cursor.execute(query)
 
   def update_comment(self, incident_id, comment):
-    query = "UPDATE incident SET comment = '{}' WHERE incident_id = '{}' RETURNING *;\
+    query = "UPDATE incident SET comment = '{}' WHERE incident_id = {} RETURNING *;\
     ".format(comment, incident_id)
     self.cursor.execute(query)
-    return self.cursor.fetchone()
+    return self.cursor.fetchall()
 
   def delete_incident(self, incident_id):
     query = "DELETE FROM incident WHERE incident_id = '{}' RETURNING incident_id" .format(incident_id)
     self.cursor.execute(query)
     return self.cursor.fetchone()
 
+  def drop_tables(self):
+    query = "DROP table users CASCADE; DROP table if exists users;DROP table if exists incident; "
+    self.cursor.execute(query)
+    return "Dropped"
 
 
 

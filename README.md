@@ -49,8 +49,7 @@ Go on and install pylint to help you run the tests of the application
  You are to install postgres on your machine 
  Then set your database name to jenny 
 
-
-###To run the tests:
+### To run the tests:
   `pytest`  or
   `py.test --cov`  and this will show you the coverage of the tests locally
 

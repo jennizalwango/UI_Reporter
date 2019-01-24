@@ -10,7 +10,7 @@ SECRET_KEY = configuration["production"].SECRET_KEY
 db = DatabaseConnenction()
 
 
-def encode_auth_token(password):
+def encode_auth_token(user_id):
     """
     Generates the Auth Token
     :return: string
@@ -19,7 +19,7 @@ def encode_auth_token(password):
         payload = {
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
             'iat': datetime.datetime.utcnow(),
-            'sub': password
+            'sub': user_id
         }
         return jwt.encode(
             payload,
@@ -44,8 +44,8 @@ def token_required(func):
 
     try:
       data = jwt.decode(token, SECRET_KEY)
-      current_user = db.get_user_by_password(password=data["sub"])
-      
+      current_user = db.get_user_by_user_id(data["sub"])
+
     except:
       return jsonify({
         "status": 401,
