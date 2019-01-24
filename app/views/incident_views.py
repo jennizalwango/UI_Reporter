@@ -1,11 +1,15 @@
+import os
+import datetime
 from flask import Blueprint, request, jsonify
-from app.models.user import *
-from app.models.incident import *
+from app.models.database import *
+from app.controllers.auth_users import  encode_auth_token, token_required
+from app.controllers.validations import Validators
 
-userlist =user_list
-incidentlist = incident_list
 
-redflag = Blueprint('create', __name__)
+redflag = Blueprint('redflag', __name__)
+
+db = DatabaseConnenction()
+validate_input = Validators()
 
 
 required_status = ['resolved','rejected','draft','under investaging']
@@ -16,234 +20,275 @@ def home():
     "message": "Welcome"
   })
 
-@redflag.route('/register', methods=['POST'])
+@redflag.route('/auth/register', methods=['POST'])
 def register():
     data = request.get_json(force=True)
     
-    username = data.get('username', None)
+    username = data.get('username',None)
+    first_name = data.get('first_name',None)
+    last_name = data.get('last_name', None)
+    other_name = data.get('other_names', None)
     email = data.get('email', None)
     password = data.get('password', None)
-    first_name = data.get('first_name', None)
-    last_name = data.get('last_name', None)
-    other_names = data.get('other_names', None)
-    phone_number = data.get('phone_number', None)
-    is_admin = data.get('is_admin', None)
 
-    if not username or not password or not email:
-        return jsonify({
-        "status": 400,
-        "error": "Please provide the required fields"
-    }), 400
-
-
-    for user in userlist:
-      if username == user.username:
-        return jsonify({
-          "status": 400,
-          "error": "Account already exits"
-        }), 400
-    for user in userlist:
-      if email == user.email:
-        return jsonify({
-            "status": 400,
-            "message":"Email already exists"
-        }), 400
-
-    user = User(username, first_name, last_name, other_names, email, phone_number, password, is_admin)
-    userlist.append(user)
-
-    response = {
+    user = db.create_user(username, first_name, last_name, other_name, email, password)
+    return jsonify({
       "status": 201,
-      "message": "User account created successfully",
-      "data": [user.to_dict()]
-    }
-    return jsonify(response), 201
+      "message":"User created successfully",
+      "data":user
+    }), 201
+    return jsonify({
+      "status":400,
+      "message":"Please provide valid information "
+    })
 
-@redflag.route('/login', methods=['POST'])
+@redflag.route('/auth/login', methods=['POST'])
 def login():
   data = request.get_json(force=True)
   username = data.get('username', None)
   password = data.get('password', None)
 
-  for user in userlist:
-    if username == user.username and password == user.password:
+  if  not type("username") == str:
+    return jsonify({
+      "status": 400,
+      "message":"Please make username a string"
+      }), 400
+
+  if  not type("password") == str:
+    return jsonify({
+      "status": 400,
+      "message":"Please make password a string"
+      }), 400
+
+  if len(username) < 3:
+    return jsonify({
+      "status":400,
+      "message":"Username too short, should have atleast 3 character"
+      }), 400
+
+  if len(password) < 5:
       return jsonify({
-        "status": 200,
-        "message": "Login successful",
-        "data": [user.to_dict()]
-      }), 200
-
+        "status":400,
+        "message":"Password too short, should have atleast 5 character"
+        }), 400
+        
+  db_user = db.get_user(username, password)
+  if  db_user:
+    token = encode_auth_token(username).decode()
+    return jsonify({
+      "status":200,
+      "token": token,
+      "message":"Login Successful"
+    })
   return jsonify({
-    "status": 400,
-    "error": "Invaild username or password"
-  }), 400
-
-
+        "status": 400,
+        "message":"User doesnot exit"
+        }), 400
+    
+  
+  
 @redflag.route('/incident', methods=['POST'])
-def create_incident():
+@token_required
+def create_incident_redflag(current_user):
   data = request.get_json(force=True)
+
   created_by = data.get('created_by', None)
-  incident_type = data.get('incident_type', None)
+  incident_type = "redflag"
   location = data.get('location', None)
   phone_number = data.get('phone_number', None)
-  status  = 'draft'
+  status = 'draft'
   images = data.get('images', None)
   videos = data.get('videos', None)
   comment = data.get('comment', None)
+  created_on = datetime.datetime.now()
 
-  incident = Incident(created_by, incident_type, location, status, images, videos, comment)
-  respo = validate_incident(incident)
-
-  if respo:
-    return jsonify(respo), 400
-
-  incidentlist.append(incident)
-
-  response = {
-    "status": 201,
-    "message": "Incident record created successfully ",
-    "data": [incident.to_dict()]
-  }
-  
-  return jsonify(response), 201
-
-def validate_incident(incident):
-  errors = []
-  user_exists = False
-
-  if incident:
-    created_by = incident.created_by
-    incident_type = incident.incident_type
-    location = incident.location
-    status = incident.status
-    images = incident.images
-    videos = incident.videos
-
-    for user in userlist:
-      if created_by == user.username:
-        user_exists = True
-      break
-
-    if not user_exists:
-      errors.append({
-        "user_error": "User assigned doesnot exist"
-      })
-
-    if not location:
-      errors.append({
-        "location_error": "Location is missing"
-      })
-
-    if not created_by:
-      errors.append({
-        "error_created": "Please provide valid fields"
-      })
-
-    if not incident_type:
-      errors.append({		
-        "incident_type": "Please specify the incident type"
-      })
-
-  else:
-    errors.append({
-      "error": "Please provide incident details"
-    })
-
-  if len(errors) > 0:
-    return {
-      "status": 400,
-      "errors": errors
-    }
-  else:
-   return None
-
-@redflag.route('/incident', methods=['GET'])
-def fetch_all_incident():
-  if incidentlist:
-    return jsonify({
-        "status": 200,
-        "data": [incident.to_dict() for incident in incidentlist]
-      })
+  db_Incident = db.create_incident(created_by, incident_type, location, phone_number, status, images, videos, comment, created_on)
   return jsonify({
-      "status":400,
-      "message": "No incidents created"
+    "status":200,
+    "message": "Incident created successfully",
+    "data":db_Incident
+  })
+
+  #  """validatate for the input data"""
+
+  if "created_by" not in db_Incident:
+    return jsonify({
+      "status": 400,
+      "message":"Please fill the created_by field"
       }), 400
 
-@redflag.route('/incident/<int:incident_id>', methods=['GET'])
-def get_specific(incident_id):
-  for incident in incidentlist:
-    if incident.id == incident_id:
-      return jsonify({
-        "status": 200,
-        "data": incident.to_dict()
-      })
+  if "incident_type" not in db_Incident:
+    return jsonify({
+      "status":400,
+      "message":"Please fill in the incident_type field"
+      }), 400
 
-  return jsonify({
-    "status": 400,
-    "error": "Incident not found" 
-    })
-
-@redflag.route('/incident/<int:incident_id>/location', methods=['PATCH'])
-def update_location(incident_id):
-  data = request.get_json(force=True)
-  location = data.get('location', None)
-
-  if not location:
+  if "location" not in  db_Incident:
     return jsonify({
       "status": 400,
-      "message": "Please include Location of the record"
+      "message":"Please fill the location field"
+      }), 400
+
+  if "phone_number" not in  db_Incident:
+    return jsonify({
+      "status": 400,
+      "message":"Plesae provide the phone_number"
+      }), 400
+
+  if "status" not in  db_Incident:
+    return jsonify({
+      "status": 400,
+      "message":"Please fill the status field"
+          }), 400
+
+  if "images" not in  db_Incident:
+    return jsonify({
+      "status": 400,
+      "message":"Please provide some images"
+      }), 400
+
+  if "videos" not in  db_Incident:
+    return jsonify({
+      "status": 400,
+      "message":'Please provide some videos'
+      }), 400
+
+  if "comment" not in  db_Incident:
+    return jsonify({
+      "status": 400,
+      "message":"Please leave a comment"
+      }), 400
+
+  if not type(created_by) == str:
+    return jsonify({
+      "status":400,
+      "message":"Created_by feild must be a string"
+      }), 400
+
+  if not type(incident_type) == str:
+    return jsonify({
+      "status": 400,
+      "message":'Incident field must be put in a string'
+      }), 400
+
+  if not type(phone_number) == int:
+    return jsonify({
+      "status":400,
+      "message":"Phone number must be an integer"  
     }), 400
 
-  for incident in incidentlist:
-    if incident.id == incident_id:
-      incident.location = location
-      return jsonify({
-        "status": 200,
-        "message": "Updated incident record's location",
-        "data": incident.to_dict()
-      }), 200
+  if not type(images) == str:
+    return jsonify({
+      "status":400,
+      'message':'Images must be put in Strings'
+      }), 400
+  if not type(videos) == str:
+    return jsonify({
+      "status": 400,
+      'message':'Videos must be put in strings'
+      }), 400
 
+  if not type(comment) == str:
+    return jsonify({
+      "status": 400,
+      "message": "Comment must be put in a string"
+      }), 400
+  
+@redflag.route('/incident', methods=['GET'])
+@token_required
+def fetch_all_incident(current_user):
+  db_fetch = db.fetch_all_incident()
+  print(db_fetch)
   return jsonify({
-    "status": 400,
-    "message": "Incident record not created"
-  }), 400
+    "status":200,
+    "data": db_fetch
+    }), 200
+  
+@redflag.route('/incident/<int:incident_id>', methods=['GET'])
+@token_required
+def get_specific(current_user, incident_id):
+  db_speci = db.get_a_specific_incident(incident_id)
+  return jsonify({
+    "status":200,
+    "data":db_speci
+  }), 200
 
+@redflag.route('/incident/<int:incident_id>/location', methods=['PATCH'])
+@token_required
+def update_location(current_user, incident_id):
+  data = request.get_json(force=True)
+  location = data.get('location', None)
+  # if current_user['admin']:
+  if not isinstance(location, str):
+    return({
+      "status": 400,
+      "message": "Location should be a string"
+    })
+
+  if len(location) == 0:
+    return jsonify({
+      "status":400,
+      "message": "Location should not be empty"
+    })
+
+  try:
+    update_loc = db.update_location(incident_id, location)
+    return jsonify({
+      "status": 200,
+      "message": "Updated incident record location: {}".format(location),
+      "data": update_loc
+      }), 200
+  except:
+    return jsonify({
+      "status":400,
+      "message":"Location is not provided"
+      })
+   
+    
 @redflag.route('/incident/<int:incident_id>/comment', methods=["PATCH"])
-def updated_comment(incident_id):
+@token_required
+def updated_comment(current_user, incident_id):
   data = request.get_json(force=True)
   comment = data.get('comment', None)
 
-  if not comment:
+  if not isinstance(comment, str):
     return jsonify({
       "status": 400,
-      "message": "Please leave a comment"
+      "message": "Please comment must be a string"
     }), 400
 
-  for incident in incidentlist:
-    if incident.id == incident_id:
-      incident.comment = comment
-      return jsonify({
-        "status": 200,
-        "message": "Updated incident record's Comment",
-        "data": incident.to_dict()
+  if len(comment) == 0:
+    return jsonify({
+      "status": 400,
+      "message": "Comment must not be empty "
+    })
+  
+  # if current_user['admin'] is True:
+  try:
+    update_com = db.update_comment(incident_id, comment)
+    return jsonify({
+      "status": 200,
+      "message": "Updated incident record's Comment",
+      "data": update_com
       }), 200
-
-  return jsonify({
-    "status": 400,
-    "message": "Incident record not created"
+  except:
+    return jsonify({
+      "status": 400,
+      "message": "Comment is not provided"
   }), 400
+  
 
 @redflag.route('/incident/<int:incident_id>', methods=['DELETE'])
-def delete_a_specific_incident(incident_id):
-  for incident in incidentlist:
-    if incident.id == incident_id:
-      incidentlist.remove(incident)
-      return jsonify({
-        "status": 200,
-        "message": "Incident record has been deleted"
-      }), 200
-
+@token_required
+def delete_a_specific_incident(current_user, incident_id):
+  current_user['admin'] 
+  if current_user is True:
+    incidenti = db.delete_incident(incident_id)
+    return jsonify({
+      "status": 200,
+      "message": "Incident record has been deleted"
+      }),200
   return jsonify({
     "status": 400,
-    "message": "Incident record not created"
+    "message": "You donot have access for the request"
     }), 400
