@@ -13,8 +13,9 @@ class DatabaseConnenction:
 
       print(self.db_name)
 
-    connection_details = """ dbname='jenny' user='postgres' password='postgres'  port='5432' host='localhost'   
-    """
+    # connection_details = """ dbname='jenny' user='postgres' password='postgres'  port='5432' host='localhost'   
+    # """
+    connection_details = """ dbname='jenny' user='postgres' password='' host='localhost'   
     try:
         self.connection = psycopg2.connect(connection_details)
         self.connection.autocommit = True
