@@ -68,7 +68,3 @@ class APITestCase(BaseTestCase):
             }
             response = self.client.patch('api/v2/incident/1/comment', data=json.dumps(update_data_comment), content_type='application/json')
             self.assertEqual(response.status_code, 200)
-
-    
-   
-    

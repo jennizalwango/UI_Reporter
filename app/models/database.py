@@ -13,9 +13,9 @@ class DatabaseConnenction:
 
       print(self.db_name)
 
-    # connection_details = """ dbname='jenny' user='postgres' password='postgres'  port='5432' host='localhost'   
-    # """
-    connection_details = """ dbname='jenny' user='postgres' password='' host='localhost'   
+    connection_details = """ dbname='jenny' user='postgres' password='postgres'  port='5432' host='localhost'   
+    """
+    
     try:
         self.connection = psycopg2.connect(connection_details)
         self.connection.autocommit = True
@@ -37,8 +37,7 @@ class DatabaseConnenction:
   def create_admin(self):
     query = """INSERT INTO users (user_id, username, first_name, last_name, other_name, email, password, admin)
     VALUES(1, 'jean', 'jean', 'zalaw','abeth','abeth@gmil.com','pbkdf2:sha256:50000$cdVO7aZw$316fe667df3c22da936ca9cbe513e828903d5d5727c938a943b34ff682d35f44', True);"""
-    truncate_user_table
-    self.db.cursor.execute(query)
+    self.cursor.execute(query)
     
 
   def create_user(self, username, first_name, last_name, other_name, email, password):
@@ -143,6 +142,3 @@ class DatabaseConnenction:
       query = "DROP TABLE incident CASCADE;"
       self.cursor.execute(query)
       return "Dropped"
-
-
-

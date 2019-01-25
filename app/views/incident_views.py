@@ -13,7 +13,6 @@ redflag = Blueprint('redflag', __name__)
 db = DatabaseConnenction()
 validate_input = Validators()
 
-
 required_status = ['resolved','rejected','draft','under investaging']
 
 @redflag.route('/', methods=['GET'])
@@ -209,3 +208,4 @@ def delete_a_specific_incident(current_user, incident_id):
     "status": 400,
     "message": "You donot have access for the request"
     }), 400
+    

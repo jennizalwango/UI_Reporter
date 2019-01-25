@@ -26,8 +26,6 @@ class Validators:
         elif len(password) < 6:
             return "Password must be of 6 charaters"
 
-
-
     def validate_create_input(self,created_by, incident_type, location, phone_number, status, images,       videos, comment):  
         if not created_by or created_by.isspace():
             return "Please fill the created_by field"
@@ -50,11 +48,8 @@ class Validators:
         if  not videos  or videos.isspace():
             return "Please provide some videos"
 
-        if  not comment or comment.isspace:
+        if  not comment or comment.isspace():
             return "Please leave a comment"
-
-        if not type(phone_number) == int:
-            return "Phone number must be an integer"  
             
     def validate_login_input(self, username, password):
         if not password or password.isspace():
@@ -62,5 +57,3 @@ class Validators:
 
         if not username or username.isspace():
             return "Username field can not be left empty."
-
-
