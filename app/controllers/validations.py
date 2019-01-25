@@ -1,45 +1,66 @@
+import re
 
 class Validators:
+    def validate_user_input(self, username, first_name, last_name, other_name, email, password):
+        if not username or username.isspace():
+            return "Username field can not be left empty."
 
-    def validatate_user_email(self, email):
-        if not email:
-            return "Email field cannot be left out"
+        elif not first_name or first_name.isspace():
+            return "Frist name can not be left empty."
 
-        if not "@" in email:
-            return "Please include an @ sign"
+        elif not last_name or first_name.isspace():
+            return "Last name can not be left empty."
 
-        if type(email) != str:
-            return "Email should be a string"
-        email = (email).strip()
+        elif not other_name or other_name.isspace():
+            return "Other name can not be left empty."
+
+        elif not email or email.isspace():
+            return "Email field can not be left empty."
+
+        elif not re.match(r"(^[a-zA-z0-9_.]+@[a-zA-z0-9-]+\.[a-z]+$)" , email):
+            return "Enter a valid email address."
+
+        elif not password or password.isspace():
+            return "Password field can not be left empty."
+
+        elif len(password) < 6:
+            return "Password must be of 6 charaters"
 
 
-    def validatate_user_username(self, username):
-        if not username:
-            return "Username cannot be a missing field"
 
-        if not isinstance(username, str):
-            return "Please username should be a string"
-        username = (username).strip()
+    def validate_create_input(self,created_by, incident_type, location, phone_number, status, images,       videos, comment):  
+        if not created_by or created_by.isspace():
+            return "Please fill the created_by field"
 
-    def validate_user_fields_missing(self, first_name, last_name, other_name):
-        if not first_name:
-            return "First_name missing"
+        if not incident_type or incident_type.isspace():
+            return "Please fill in the incident_type field"
+
+        if  not location or location.isspace():
+            return "Please fill the location field"
         
-        if not last_name:
-            return "Last_name missing"
+        if  not phone_number or phone_number.isspace():
+            return "Plesae provide the phone_number"
+            
+        if  not status  or status.isspace():
+            return "Please fill the status field"
+                
+        if  not images or images.isspace():
+            return "Please provide some images"
 
-        if not other_name:
-            return "Other_name missing"   
+        if  not videos  or videos.isspace():
+            return "Please provide some videos"
 
-    def validate_user_fields_are_strings(self, first_name, last_name, other_name):
-        if not isinstance(first_name, str):
-            return "Please first_name should be a string"
-        first_name = (first_name).strip()
+        if  not comment or comment.isspace:
+            return "Please leave a comment"
 
-        if not isinstance(last_name, str):
-            return "Please last_name should be a string"
-        last_name = (last_name).strip()
+        if not type(phone_number) == int:
+            return "Phone number must be an integer"  
+            
+    def validate_login_input(self, username, password):
+        if not password or password.isspace():
+            return "Password field can not be left empty."
 
-        if not isinstance(other_name, str):
-            return "Please other_name should be a string"
-        other_name = (other_name).strip()
+        if not username or username.isspace():
+            return "Username field can not be left empty."
+
+

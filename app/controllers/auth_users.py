@@ -29,28 +29,29 @@ def encode_auth_token(user_id):
     except Exception as error:
         return error
 
+
 def token_required(func):
-  @wraps(func)
-  def decorated(*args, **kwargs):
-    token = None
-    if 'Authorization' in request.headers:
-      token = request.headers['Authorization']
+    @wraps(func)
+    def decorated(*args, **kwargs):
+        token = None
+        if 'Authorization' in request.headers:
+            token = request.headers['Authorization']
 
-    if not token:
-      return jsonify({
-        "status": 400,
-        "message": "Token  missing"
-        })
+        if not token:
+            return jsonify({
+                "status": 400,
+                "message": "Token  missing"
+            })
 
-    try:
-      data = jwt.decode(token, SECRET_KEY)
-      current_user = db.get_user_by_user_id(data["sub"])
+        try:
+            data = jwt.decode(token, SECRET_KEY)
+            current_user = db.get_user_by_user_id(data["sub"])
 
-    except:
-      return jsonify({
-        "status": 401,
-        "meassage": "Token Invalid"
-        })
-    return func(current_user, *args, **kwargs)
+        except:
+            return jsonify({
+                "status": 401,
+                "meassage": "Token Invalid"
+            })
+        return func(current_user, *args, **kwargs)
 
-  return decorated
+    return decorated
