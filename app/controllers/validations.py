@@ -57,3 +57,5 @@ class Validators:
 
         if not username or username.isspace():
             return "Username field can not be left empty."
+
+    
